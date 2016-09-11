@@ -357,13 +357,10 @@ public class ImageTargets extends Activity implements SampleApplicationControl{
         return result;
     }
 
-
     @Override
     public boolean onTouchEvent(MotionEvent event){
         return mGestureDetector.onTouchEvent(event);
     }
-
-
     boolean isExtendedTrackingActive(){
         return mExtendedTracking;
     }
