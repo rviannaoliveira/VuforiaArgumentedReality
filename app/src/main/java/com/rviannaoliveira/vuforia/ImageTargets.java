@@ -44,7 +44,6 @@ public class ImageTargets extends Activity implements SampleApplicationControl{
     private static final String LOGTAG = "ImageTargets";
     SampleApplicationSession vuforiaAppSession;
     private DataSet mCurrentDataset;
-    private int mCurrentDatasetSelectionIndex = 0;
     private ArrayList<String> mDatasetStrings = new ArrayList<String>();
     private SampleApplicationGLView mGlView;
     private ImageTargetRenderer mRenderer;
@@ -55,6 +54,8 @@ public class ImageTargets extends Activity implements SampleApplicationControl{
     private RelativeLayout mUILayout;
     LoadingDialogHandler loadingDialogHandler = new LoadingDialogHandler(this);
     private AlertDialog mErrorDialog;
+    private final static int STONE_AND_CHIPS =  0;
+    private final static int PEDRA_NO_RIM =  1;
     boolean mIsDroidDevice = false;
     
     @Override
@@ -98,6 +99,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl{
 
     private void loadTextures(){
         mTextures.add(Texture.loadTextureFromApk("palmeiras.png",getAssets()));
+        mTextures.add(Texture.loadTextureFromApk("android.png",getAssets()));
     }
     
     @Override
@@ -192,9 +194,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl{
         if (mCurrentDataset == null)
             return false;
 
-        if (!mCurrentDataset.load(
-            mDatasetStrings.get(mCurrentDatasetSelectionIndex),
-            STORAGE_TYPE.STORAGE_APPRESOURCE))
+        if (!mCurrentDataset.load(mDatasetStrings.get(PEDRA_NO_RIM),STORAGE_TYPE.STORAGE_APPRESOURCE))
             return false;
 
         if (!objectTracker.activateDataSet(mCurrentDataset))
@@ -309,9 +309,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl{
         Tracker tracker;
         tracker = tManager.initTracker(ObjectTracker.getClassType());
         if (tracker == null){
-            Log.e(
-                LOGTAG,
-                "Tracker not initialized. Tracker already initialized or the camera is already started");
+            Log.e(LOGTAG,"Tracker not initialized. Tracker already initialized or the camera is already started");
             result = false;
         } else{
             Log.i(LOGTAG, "Tracker successfully initialized");
@@ -322,7 +320,6 @@ public class ImageTargets extends Activity implements SampleApplicationControl{
     @Override
     public boolean doStartTrackers(){
         boolean result = true;
-        
         Tracker objectTracker = TrackerManager.getInstance().getTracker(
             ObjectTracker.getClassType());
         if (objectTracker != null)
