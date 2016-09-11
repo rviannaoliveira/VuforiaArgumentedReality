@@ -64,7 +64,6 @@ public class ImageTargets extends Activity implements SampleApplicationControl{
         vuforiaAppSession = new SampleApplicationSession(this);
         startLoadingAnimation();
         mDatasetStrings.add("StonesAndChips.xml");
-        mDatasetStrings.add("Tarmac.xml");
         mDatasetStrings.add("Image_Targets.xml");
         vuforiaAppSession.initAR(this, ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         mGestureDetector = new GestureDetector(this, new GestureListener());
@@ -98,10 +97,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl{
     }
 
     private void loadTextures(){
-        mTextures.add(Texture.loadTextureFromApk("TextureTeapotBrass.png",getAssets()));
-        mTextures.add(Texture.loadTextureFromApk("TextureTeapotBlue.png",getAssets()));
-        mTextures.add(Texture.loadTextureFromApk("TextureTeapotRed.png",getAssets()));
-        mTextures.add(Texture.loadTextureFromApk("ImageTargets/Buildings.jpeg",getAssets()));
+        mTextures.add(Texture.loadTextureFromApk("palmeiras.png",getAssets()));
     }
     
     @Override
@@ -215,8 +211,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl{
             
             String name = "Current Dataset : " + trackable.getName();
             trackable.setUserData(name);
-            Log.d(LOGTAG, "UserData:Set the following user data "
-                + (String) trackable.getUserData());
+            Log.d(LOGTAG, "UserData:Set the following user data "+  trackable.getUserData());
         }
         return true;
     }
@@ -338,7 +333,6 @@ public class ImageTargets extends Activity implements SampleApplicationControl{
     
     @Override
     public boolean doStopTrackers(){
-        // Indicate if the trackers were stopped correctly
         boolean result = true;
 
         Tracker objectTracker = TrackerManager.getInstance().getTracker(
