@@ -44,13 +44,12 @@ public class ImageTargets extends Activity implements SampleApplicationControl{
     private static final String LOGTAG = "ImageTargets";
     SampleApplicationSession vuforiaAppSession;
     private DataSet mCurrentDataset;
-    private ArrayList<String> mDatasetStrings = new ArrayList<String>();
+    private ArrayList<String> mDatasetStrings = new ArrayList<>();
     private SampleApplicationGLView mGlView;
     private ImageTargetRenderer mRenderer;
     private GestureDetector mGestureDetector;
     private Vector<Texture> mTextures;
     private boolean mSwitchDatasetAsap = false;
-    private boolean mExtendedTracking = false;
     private RelativeLayout mUILayout;
     LoadingDialogHandler loadingDialogHandler = new LoadingDialogHandler(this);
     private AlertDialog mErrorDialog;
@@ -194,7 +193,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl{
         if (mCurrentDataset == null)
             return false;
 
-        if (!mCurrentDataset.load(mDatasetStrings.get(PEDRA_NO_RIM),STORAGE_TYPE.STORAGE_APPRESOURCE))
+        if (!mCurrentDataset.load(mDatasetStrings.get(STONE_AND_CHIPS),STORAGE_TYPE.STORAGE_APPRESOURCE))
             return false;
 
         if (!objectTracker.activateDataSet(mCurrentDataset))
@@ -353,6 +352,6 @@ public class ImageTargets extends Activity implements SampleApplicationControl{
         return mGestureDetector.onTouchEvent(event);
     }
     boolean isExtendedTrackingActive(){
-        return mExtendedTracking;
+        return false;
     }
 }
