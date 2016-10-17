@@ -63,15 +63,17 @@ public class ImageTargets extends Activity implements SampleApplicationControl{
         super.onCreate(savedInstanceState);
         vuforiaAppSession = new SampleApplicationSession(this);
         startLoadingAnimation();
-        mDatasetStrings.add("StonesAndChips.xml");
-        mDatasetStrings.add("Image_Targets.xml");
+        defineAlvosParaMapeamento();
         vuforiaAppSession.initAR(this, ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         mGestureDetector = new GestureDetector(this, new GestureListener());
         mTextures = new Vector<>();
-        loadTextures();
+        carregandoTexturasObjeto();
         mIsDroidDevice = android.os.Build.MODEL.toLowerCase().startsWith("droid");
     }
-    
+    private void defineAlvosParaMapeamento(){
+        mDatasetStrings.add("StonesAndChips.xml");
+        mDatasetStrings.add("Image_Targets.xml");
+    }
     private class GestureListener extends GestureDetector.SimpleOnGestureListener{
         private final Handler autofocusHandler = new Handler();
 
@@ -96,7 +98,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl{
         }
     }
 
-    private void loadTextures(){
+    private void carregandoTexturasObjeto(){
         mTextures.add(Texture.loadTextureFromApk("palmeiras.png",getAssets()));
         mTextures.add(Texture.loadTextureFromApk("android.png",getAssets()));
     }
@@ -182,14 +184,23 @@ public class ImageTargets extends Activity implements SampleApplicationControl{
     
     @Override
     public boolean doLoadTrackersData(){
+
+        if(verificaSeEstaApontandoParaObjetoMapeado()){
+            quantasImagensMapeadasForamLocalizadas();
+        }
+        return true;
+    }
+
+    private boolean verificaSeEstaApontandoParaObjetoMapeado(){
         TrackerManager tManager = TrackerManager.getInstance();
         ObjectTracker objectTracker = (ObjectTracker) tManager.getTracker(ObjectTracker.getClassType());
+
         if (objectTracker == null)
             return false;
-        
+
         if (mCurrentDataset == null)
             mCurrentDataset = objectTracker.createDataSet();
-        
+
         if (mCurrentDataset == null)
             return false;
 
@@ -198,7 +209,10 @@ public class ImageTargets extends Activity implements SampleApplicationControl{
 
         if (!objectTracker.activateDataSet(mCurrentDataset))
             return false;
-        
+
+        return true;
+    }
+    private void quantasImagensMapeadasForamLocalizadas(){
         int numTrackables = mCurrentDataset.getNumTrackables();
         for (int count = 0; count < numTrackables; count++)
         {
@@ -207,14 +221,13 @@ public class ImageTargets extends Activity implements SampleApplicationControl{
             {
                 trackable.startExtendedTracking();
             }
-            
+
             String name = "Current Dataset : " + trackable.getName();
             trackable.setUserData(name);
             Log.d(LOGTAG, "UserData:Set the following user data "+  trackable.getUserData());
         }
-        return true;
+
     }
-    
     
     @Override
     public boolean doUnloadTrackersData(){

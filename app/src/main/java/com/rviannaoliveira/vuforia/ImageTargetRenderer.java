@@ -9,18 +9,16 @@ countries.
 
 package com.rviannaoliveira.vuforia;
 
-import java.io.IOException;
-import java.util.Vector;
-
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.util.Log;
 
 import com.rviannaoliveira.vuforia.utils.CubeObject;
+import com.rviannaoliveira.vuforia.utils.CubeShaders;
+import com.rviannaoliveira.vuforia.utils.LoadingDialogHandler;
+import com.rviannaoliveira.vuforia.utils.SampleUtils;
+import com.rviannaoliveira.vuforia.utils.Texture;
 import com.vuforia.Matrix44F;
 import com.vuforia.Renderer;
 import com.vuforia.State;
@@ -29,11 +27,11 @@ import com.vuforia.Trackable;
 import com.vuforia.TrackableResult;
 import com.vuforia.VIDEO_BACKGROUND_REFLECTION;
 import com.vuforia.Vuforia;
-import com.rviannaoliveira.vuforia.utils.CubeShaders;
-import com.rviannaoliveira.vuforia.utils.LoadingDialogHandler;
-import com.rviannaoliveira.vuforia.utils.SampleApplication3DModel;
-import com.rviannaoliveira.vuforia.utils.SampleUtils;
-import com.rviannaoliveira.vuforia.utils.Texture;
+
+import java.util.Vector;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
 public class ImageTargetRenderer implements GLSurfaceView.Renderer{
     private static final String LOGTAG = "ImageTargetRenderer";
     private SampleApplicationSession vuforiaAppSession;
@@ -63,7 +61,7 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer{
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config){
         Log.d(LOGTAG, "GLRenderer.onSurfaceCreated");
-        initRendering();
+        redenrizaObjetoNaTela();
         vuforiaAppSession.onSurfaceCreated();
     }
 
@@ -73,7 +71,7 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer{
         vuforiaAppSession.onSurfaceChanged(width, height);
     }
 
-    private void initRendering(){
+    private void redenrizaObjetoNaTela(){
         mCubeObject = new CubeObject();
         mRenderer = Renderer.getInstance();
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, Vuforia.requiresAlpha() ? 0.0f: 1.0f);
@@ -96,29 +94,29 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer{
     }
 
     private void renderFrame(){
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-        State state = mRenderer.begin();
-        mRenderer.drawVideoBackground();
-        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-        int[] viewport = vuforiaAppSession.getViewport();
-        GLES20.glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
-        GLES20.glEnable(GLES20.GL_CULL_FACE);
-        GLES20.glCullFace(GLES20.GL_BACK);
+        State state = pegaEstadoTelaVerificaMatchMapeamento();
+
         if (Renderer.getInstance().getVideoBackgroundConfig().getReflection() == VIDEO_BACKGROUND_REFLECTION.VIDEO_BACKGROUND_REFLECTION_ON)
             GLES20.glFrontFace(GLES20.GL_CW); // Front camera
         else
             GLES20.glFrontFace(GLES20.GL_CCW); // Back camera
 
         for (int tIdx = 0; tIdx < state.getNumTrackableResults(); tIdx++){
+
+            //Pega cada mapeamento
             TrackableResult result = state.getTrackableResult(tIdx);
             Trackable trackable = result.getTrackable();
             printUserData(trackable);
+
+            //Ve os assests do mapeamento
             Matrix44F modelViewMatrix_Vuforia = Tool.convertPose2GLMatrix(result.getPose());
             float[] modelViewMatrix = modelViewMatrix_Vuforia.getData();
             int textureIndex = trackable.getName().equalsIgnoreCase("stones") ? 0: 1;
 
             float[] modelViewProjection = new float[16];
 
+
+            //Dimensiona a escala do objeto
             if (!mActivity.isExtendedTrackingActive()){
                 Matrix.translateM(modelViewMatrix, 0, 0.0f, 0.0f,OBJECT_SCALE_FLOAT);
                 Matrix.scaleM(modelViewMatrix, 0, OBJECT_SCALE_FLOAT,OBJECT_SCALE_FLOAT, OBJECT_SCALE_FLOAT);
@@ -127,27 +125,43 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer{
             Matrix.multiplyMM(modelViewProjection, 0, vuforiaAppSession.getProjectionMatrix().getData(), 0, modelViewMatrix, 0);
             GLES20.glUseProgram(shaderProgramID);
 
-            if (!mActivity.isExtendedTrackingActive()){
-                GLES20.glVertexAttribPointer(vertexHandle, 3, GLES20.GL_FLOAT,false, 0, mCubeObject.getVertices());
-                GLES20.glVertexAttribPointer(normalHandle, 3, GLES20.GL_FLOAT,false, 0, mCubeObject.getNormals());
-                GLES20.glVertexAttribPointer(textureCoordHandle, 2,GLES20.GL_FLOAT, false, 0, mCubeObject.getTexCoords());
-                GLES20.glEnableVertexAttribArray(vertexHandle);
-                GLES20.glEnableVertexAttribArray(normalHandle);
-                GLES20.glEnableVertexAttribArray(textureCoordHandle);
-                GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,mTextures.get(textureIndex).mTextureID[0]);
-                GLES20.glUniform1i(texSampler2DHandle, 0);
-                GLES20.glUniformMatrix4fv(mvpMatrixHandle, 1, false,modelViewProjection, 0);
-                GLES20.glDrawElements(GLES20.GL_TRIANGLES, mCubeObject.getNumObjectIndex(), GLES20.GL_UNSIGNED_SHORT, mCubeObject.getIndices());
-                GLES20.glDisableVertexAttribArray(vertexHandle);
-                GLES20.glDisableVertexAttribArray(normalHandle);
-                GLES20.glDisableVertexAttribArray(textureCoordHandle);
-            }
+            seLocalizouMontaObjeto(textureIndex,modelViewProjection);
             SampleUtils.checkGLError("Render Frame");
         }
         GLES20.glDisable(GLES20.GL_DEPTH_TEST);
         mRenderer.end();
     }
+
+    private State pegaEstadoTelaVerificaMatchMapeamento(){
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+        State state = mRenderer.begin();
+        mRenderer.drawVideoBackground();
+        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+        int[] viewport = vuforiaAppSession.getViewport();
+        GLES20.glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+        GLES20.glEnable(GLES20.GL_CULL_FACE);
+        GLES20.glCullFace(GLES20.GL_BACK);
+        return state;
+    }
+    private void seLocalizouMontaObjeto(int textureIndex, float [] modelViewProjection){
+        if (!mActivity.isExtendedTrackingActive()){
+            GLES20.glVertexAttribPointer(vertexHandle, 3, GLES20.GL_FLOAT,false, 0, mCubeObject.getVertices());
+            GLES20.glVertexAttribPointer(normalHandle, 3, GLES20.GL_FLOAT,false, 0, mCubeObject.getNormals());
+            GLES20.glVertexAttribPointer(textureCoordHandle, 2,GLES20.GL_FLOAT, false, 0, mCubeObject.getTexCoords());
+            GLES20.glEnableVertexAttribArray(vertexHandle);
+            GLES20.glEnableVertexAttribArray(normalHandle);
+            GLES20.glEnableVertexAttribArray(textureCoordHandle);
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,mTextures.get(textureIndex).mTextureID[0]);
+            GLES20.glUniform1i(texSampler2DHandle, 0);
+            GLES20.glUniformMatrix4fv(mvpMatrixHandle, 1, false,modelViewProjection, 0);
+            GLES20.glDrawElements(GLES20.GL_TRIANGLES, mCubeObject.getNumObjectIndex(), GLES20.GL_UNSIGNED_SHORT, mCubeObject.getIndices());
+            GLES20.glDisableVertexAttribArray(vertexHandle);
+            GLES20.glDisableVertexAttribArray(normalHandle);
+            GLES20.glDisableVertexAttribArray(textureCoordHandle);
+        }
+    }
+
 
     private void printUserData(Trackable trackable){
         String userData = (String) trackable.getUserData();
