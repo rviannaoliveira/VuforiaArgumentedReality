@@ -186,7 +186,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl{
     public boolean doLoadTrackersData(){
 
         if(verificaSeEstaApontandoParaObjetoMapeado()){
-            quantasImagensMapeadasForamLocalizadas();
+            calculaQuantidadesDeAlvosEncontrados();
         }
         return true;
     }
@@ -212,7 +212,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl{
 
         return true;
     }
-    private void quantasImagensMapeadasForamLocalizadas(){
+    private void calculaQuantidadesDeAlvosEncontrados(){
         int numTrackables = mCurrentDataset.getNumTrackables();
         for (int count = 0; count < numTrackables; count++)
         {

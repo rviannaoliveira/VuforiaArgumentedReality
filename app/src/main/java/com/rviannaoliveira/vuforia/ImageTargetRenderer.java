@@ -125,7 +125,7 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer{
             Matrix.multiplyMM(modelViewProjection, 0, vuforiaAppSession.getProjectionMatrix().getData(), 0, modelViewMatrix, 0);
             GLES20.glUseProgram(shaderProgramID);
 
-            seLocalizouMontaObjeto(textureIndex,modelViewProjection);
+            montaImagemSeAchouObjeto(textureIndex,modelViewProjection);
             SampleUtils.checkGLError("Render Frame");
         }
         GLES20.glDisable(GLES20.GL_DEPTH_TEST);
@@ -143,7 +143,7 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer{
         GLES20.glCullFace(GLES20.GL_BACK);
         return state;
     }
-    private void seLocalizouMontaObjeto(int textureIndex, float [] modelViewProjection){
+    private void montaImagemSeAchouObjeto(int textureIndex, float [] modelViewProjection){
         if (!mActivity.isExtendedTrackingActive()){
             GLES20.glVertexAttribPointer(vertexHandle, 3, GLES20.GL_FLOAT,false, 0, mCubeObject.getVertices());
             GLES20.glVertexAttribPointer(normalHandle, 3, GLES20.GL_FLOAT,false, 0, mCubeObject.getNormals());
